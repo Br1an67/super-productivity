@@ -27,6 +27,7 @@ object ReminderNotificationHelper {
     const val CHANNEL_ID_ALARM = "sp_reminders_channel"
     const val CHANNEL_ID_REGULAR = "sp_reminders_regular_channel"
     const val ACTION_REMINDER_DONE = "com.superproductivity.ACTION_REMINDER_DONE"
+    const val ACTION_REMINDER_OPEN = "com.superproductivity.ACTION_REMINDER_OPEN"
     const val EXTRA_RELATED_ID = "related_id"
     const val EXTRA_NOTIFICATION_ID = "notification_id"
 
@@ -180,6 +181,18 @@ object ReminderNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Open Task - opens app and navigates to the task
+        val openIntent = Intent(context, CapacitorMainActivity::class.java).apply {
+            action = ACTION_REMINDER_OPEN
+            putExtra(EXTRA_RELATED_ID, relatedId)
+            putExtra(EXTRA_NOTIFICATION_ID, notificationId)
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val openPendingIntent = PendingIntent.getActivity(
+            context, notificationId * 10 + 3, openIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val category = if (useAlarmStyle) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER
 
         val notification = NotificationCompat.Builder(context, channelId)
@@ -191,6 +204,7 @@ object ReminderNotificationHelper {
             .setOngoing(useAlarmStyle)
             .addAction(0, "Snooze 10m", snoozePendingIntent)
             .addAction(0, "Done", donePendingIntent)
+            .addAction(0, "Open", openPendingIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(category)
             .build()

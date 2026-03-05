@@ -218,6 +218,16 @@ class CapacitorMainActivity : BridgeActivity() {
                 callJSInterfaceFunctionIfExists("next", "onReminderMarkDone$", "\"$relatedId\"")
                 return
             }
+            ReminderNotificationHelper.ACTION_REMINDER_OPEN -> {
+                val relatedId = intent.getStringExtra(ReminderNotificationHelper.EXTRA_RELATED_ID) ?: return
+                val notifId = intent.getIntExtra(ReminderNotificationHelper.EXTRA_NOTIFICATION_ID, -1)
+                Log.d("SP_REMINDER", "Open action received for task: $relatedId")
+                if (notifId != -1) {
+                    NotificationManagerCompat.from(this).cancel(notifId)
+                }
+                callJSInterfaceFunctionIfExists("next", "onReminderOpenTask$", "\"$relatedId\"")
+                return
+            }
         }
 
         // Handle share intent

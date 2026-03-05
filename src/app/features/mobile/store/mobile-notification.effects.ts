@@ -9,6 +9,9 @@ import { Store } from '@ngrx/store';
 import { selectAllTasksWithReminder } from '../../tasks/store/task.selectors';
 import { CapacitorReminderService } from '../../../core/platform/capacitor-reminder.service';
 import { CapacitorPlatformService } from '../../../core/platform/capacitor-platform.service';
+import { IS_ANDROID_WEB_VIEW } from '../../../util/is-android-web-view';
+import { androidInterface } from '../../android/android-interface';
+import { TaskService } from '../../tasks/task.service';
 
 const DELAY_PERMISSIONS = 2000;
 const DELAY_SCHEDULE = 5000;
@@ -17,6 +20,7 @@ const DELAY_SCHEDULE = 5000;
 export class MobileNotificationEffects {
   private _snackService = inject(SnackService);
   private _store = inject(Store);
+  private _taskService = inject(TaskService);
   private _reminderService = inject(CapacitorReminderService);
   private _platformService = inject(CapacitorPlatformService);
   // Single-shot guard so we don't spam the user with duplicate warnings.
@@ -137,6 +141,40 @@ export class MobileNotificationEffects {
       {
         dispatch: false,
       },
+    );
+
+  /**
+   * Handle "Done" action from reminder notification.
+   * Marks the task as done.
+   */
+  handleReminderDoneAction$ =
+    IS_ANDROID_WEB_VIEW &&
+    createEffect(
+      () =>
+        androidInterface.onReminderMarkDone$.pipe(
+          tap((taskId) => {
+            Log.log('MobileEffects: Done action from reminder notification', { taskId });
+            this._taskService.setDone(taskId);
+          }),
+        ),
+      { dispatch: false },
+    );
+
+  /**
+   * Handle "Open" action from reminder notification.
+   * Navigates to the task.
+   */
+  handleReminderOpenAction$ =
+    IS_ANDROID_WEB_VIEW &&
+    createEffect(
+      () =>
+        androidInterface.onReminderOpenTask$.pipe(
+          tap((taskId) => {
+            Log.log('MobileEffects: Open action from reminder notification', { taskId });
+            this._taskService.focusTask(taskId);
+          }),
+        ),
+      { dispatch: false },
     );
 
   private _notifyPermissionIssue(message?: string): void {
