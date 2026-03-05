@@ -71,7 +71,8 @@ describe('authenticate', () => {
   });
 
   it('should return 401 with reason when verifyToken returns invalid', async () => {
-    mockVerifyToken.mockResolvedValue({ valid: false, reason: 'Token was revoked. Please log in again to get a new token.' });
+    const revokedReason = 'Token was revoked. Please log in again to get a new token.';
+    mockVerifyToken.mockResolvedValue({ valid: false, reason: revokedReason });
     const req = createMockRequest('Bearer invalid-token');
     const reply = createMockReply();
 
@@ -79,7 +80,7 @@ describe('authenticate', () => {
 
     expect(mockVerifyToken).toHaveBeenCalledWith('invalid-token');
     expect(reply._statusCode).toBe(401);
-    expect(reply._body).toEqual({ error: 'Token was revoked. Please log in again to get a new token.' });
+    expect(reply._body).toEqual({ error: revokedReason });
   });
 
   it('should set req.user when token is valid', async () => {

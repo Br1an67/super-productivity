@@ -128,12 +128,12 @@ export const verifyToken = async (token: string): Promise<TokenVerificationResul
 
     if (!user) {
       Logger.warn(`Token verification failed: User ${payload.userId} not found in DB`);
-      return { valid: false, reason: 'User not found' };
+      return { valid: false, reason: 'Account unavailable' };
     }
 
     if (!user.isVerified) {
       Logger.warn(`Token verification failed: User ${payload.userId} is not verified`);
-      return { valid: false, reason: 'Account not verified' };
+      return { valid: false, reason: 'Account unavailable' };
     }
 
     // Check token version - if it doesn't match, the token has been revoked
@@ -154,7 +154,10 @@ export const verifyToken = async (token: string): Promise<TokenVerificationResul
     return { valid: true, userId: payload.userId, email: payload.email };
   } catch (err) {
     if (err instanceof Error && err.name === 'TokenExpiredError') {
-      return { valid: false, reason: 'Token expired. Please log in again to get a new token.' };
+      return {
+        valid: false,
+        reason: 'Token expired. Please log in again to get a new token.',
+      };
     }
     return { valid: false, reason: 'Invalid token' };
   }
