@@ -82,11 +82,15 @@ export const initIndicator = ({
   forceDarkTray: boolean;
 }): Tray => {
   DIR = ICONS_FOLDER + 'indicator/';
+  // On Windows, nativeTheme.shouldUseDarkColors reports whether apps should use
+  // dark colors (dark mode), but for tray icons we need the opposite:
+  // dark mode (dark taskbar) requires light icons, light mode requires dark icons.
+  // On macOS/Linux, nativeTheme.shouldUseDarkColors works as expected for tray icons.
   shouldUseDarkColors =
     forceDarkTray ||
     IS_LINUX ||
     (IS_WINDOWS && !isWindows11()) ||
-    nativeTheme.shouldUseDarkColors;
+    (IS_WINDOWS ? !nativeTheme.shouldUseDarkColors : nativeTheme.shouldUseDarkColors);
 
   _showApp = showApp;
   _quitApp = quitApp;
